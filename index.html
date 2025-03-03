@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="p-6 bg-gray-100">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-4 text-blue-800">迪拜房贷测算器</h1>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium">月薪 (AED)</label>
+                <input type="number" id="salary" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="30000">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium">年终奖 (AED/年)</label>
+                <input type="number" id="bonus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="60000">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">现有贷款月供 (AED)</label>
+                <input type="number" id="existingLoan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="5000">
+            </div>
+        </div>
+
+        <button onclick="calculate()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            立即计算
+        </button>
+
+        <div id="result" class="mt-6 space-y-2 hidden">
+            <div class="p-4 bg-blue-50 rounded-md">
+                <h3 class="font-semibold">最高可贷金额：<span id="loanAmount" class="text-blue-600"></span></h3>
+                <p class="text-sm text-gray-600 mt-1">基于55% DTI上限计算，贷款期限25年，利率5%</p>
+            </div>
+            <canvas id="chart" class="mt-4"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const salary = parseFloat(document.getElementById('salary').value);
+            const bonus = parseFloat(document.getElementById('bonus').value) * 0.6 / 12;
+            const existingLoan = parseFloat(document.getElementById('existingLoan').value);
+            
+            const totalIncome = salary + bonus;
+            const maxMonthly = totalIncome * 0.55 - existingLoan * 0.8;
+            
+            // 房贷计算公式
+            const interestRate = 0.05/12;
+            const periods = 25*12;
+            const loanAmount = maxMonthly * ((Math.pow(1 + interestRate, periods) - 1) / (interestRate * Math.pow(1 + interestRate, periods)));
+            
+            document.getElementById('loanAmount').textContent = Math.round(loanAmount).toLocaleString() + ' AED';
+            document.getElementById('result').classList.remove('hidden');
+
+            // 饼图数据
+            new Chart(document.getElementById('chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['可负担房贷', '现有负债影响', '收入保留部分'],
+                    datasets: [{
+                        data: [loanAmount, existingLoan*0.8*periods, (totalIncome*0.45)*periods],
+                        backgroundColor: ['#3B82F6', '#F59E0B', '#10B981']
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
