@@ -3,40 +3,120 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>迪拜房贷计算器</title>
+    <title>预计可贷款金额计算器</title>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 15px; max-width: 500px; margin: 0 auto; }
-        .calculator { background: #f8f9fa; border-radius: 10px; padding: 20px; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #dee2e6; border-radius: 5px; }
-        button { background: #2eb82e; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; margin-top: 15px; }
-        .result { margin-top: 20px; padding: 15px; background: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            padding: 15px; 
+            max-width: 500px; 
+            margin: 0 auto;
+            background: #f8f9fa;
+        }
+        .calculator { 
+            background: white;
+            border-radius: 10px; 
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin: 12px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button { 
+            background: #2eb82e;
+            color: white; 
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .result h3 {
+            color: #2eb82e;
+            margin: 0 0 8px 0;
+        }
+        .result p {
+            margin: 6px 0;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h2>迪拜房贷计算器</h2>
-        <input type="number" id="salary" placeholder="月薪 (AED)" value="25000">
-        <input type="number" id="bonus" placeholder="年终奖 (AED)" value="60000">
-        <input type="number" id="existing" placeholder="现有月供 (AED)" value="5000">
+        <h2 style="text-align: center; margin-bottom: 20px;">迪拜房贷计算器</h2>
+        
+        <div class="input-group">
+            <label>月薪 (AED)</label>
+            <input type="number" id="salary" value="25000">
+        </div>
+
+        <div class="input-group">
+            <label>年终奖 (AED/年)</label>
+            <input type="number" id="bonus" value="60000">
+        </div>
+
+        <div class="input-group">
+            <label>现有月供 (AED)</label>
+            <input type="number" id="existing" value="5000">
+        </div>
+
+        <!-- 新增贷款年限输入 -->
+        <div class="input-group">
+            <label>贷款年限</label>
+            <input type="number" id="loanYears" value="25" min="1" max="50">
+        </div>
+
         <button onclick="calculate()">立即计算</button>
-        <div class="result" id="result"></div>
+
+        <div class="result" id="result">
+            <!-- 结果将动态显示在这里 -->
+        </div>
     </div>
 
     <script>
     function calculate() {
+        // 获取输入值
         const salary = parseFloat(document.getElementById('salary').value) || 0;
         const bonus = (parseFloat(document.getElementById('bonus').value) || 0) * 0.6 / 12;
         const existing = parseFloat(document.getElementById('existing').value) || 0;
+        const loanYears = parseFloat(document.getElementById('loanYears').value) || 25;
 
+        // DTI计算
         const maxMonthly = (salary + bonus) * 0.55 - existing * 0.8;
-        const rate = 0.05 / 12;
-        const months = 25 * 12;
-        const loan = maxMonthly * (Math.pow(1+rate, months)-1)/(rate*Math.pow(1+rate, months));
+        
+        // 等额本息计算
+        const rate = 0.05 / 12;  // 年利率5%
+        const months = loanYears * 12;
+        const loanAmount = maxMonthly * (Math.pow(1 + rate, months) - 1) / (rate * Math.pow(1 + rate, months));
 
+        // 显示结果
         document.getElementById('result').innerHTML = `
-            <h3>最高可贷：${Math.round(loan).toLocaleString()} AED</h3>
+            <h3>${Math.round(loanAmount).toLocaleString()} AED</h3>
             <p>月供上限：${Math.round(maxMonthly).toLocaleString()} AED</p>
-            <small>* 基于55% DTI标准计算，利率5%</small>
+            <p style="color:#888; font-size:14px;">
+                计算参数：${loanYears}年贷款期 | 年利率5%<br>
+                当前DTI比例：55%
+            </p>
         `;
     }
     </script>
